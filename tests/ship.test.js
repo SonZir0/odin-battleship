@@ -11,10 +11,8 @@ test('Ship is sunk after hit', () => {
     const testShip = new Ship(shipLength);
     // one hit is not enough to sink the ship
     testShip.hit();
-    console.log('HIT!');
     expect(testShip.isSunk()).toBe(false);
     // 2-nd hit sinks it
     testShip.hit();
-    console.log('HIT!');
     expect(testShip.isSunk()).toBe(true);
 });

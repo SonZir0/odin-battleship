@@ -1,10 +1,10 @@
 export default class Ship {
     timesHit = 0;
-    constructor(length, isVertical = true, startX = 0, startY = 0) {
-        this.length = length;
+    constructor(size, isVertical = true, startRow = 0, startColumn = 0) {
+        this.size = size;
         this.isVertical = isVertical;
-        this.startX = startX;
-        this.startY = startY;
+        this.startRow = startRow;
+        this.startColumn = startColumn;
     }
 
     hit() {
@@ -12,6 +12,6 @@ export default class Ship {
     }
 
     isSunk() {
-        return !(this.length - this.timesHit);
+        return !(this.size - this.timesHit);
     }
 }
