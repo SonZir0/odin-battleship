@@ -1,13 +1,15 @@
 import Ship from './ship';
-import { clamp } from './index';
+import { clamp, addProximityArea } from './utils';
 
-/* On board numbers mean following:
-        -2      -   damaged ship. Attacking this cell is invalid action
-        -1      -   miss. Attacking this cell is invalid action
-        null    -   water cell
-        0       -   water cell that is directly adjacent to some ship. Only used during
-                    "ship placement" stage to prevent units being too close to each other
-        num > 0 -   cell with ship ID number (should be positive). It's used to point out
+/*  GameBoard class represents player's team. The boards itself is a matrix and numbers
+    on it mark the following:
+        -2      -   damaged ship cell
+        -1      -   attacked empty/water cell
+        null    -   empty/water cell
+        0       -   water cell that is directly adjacent to some ship. Used only during
+                    "ship placement" stage to prevent units being too close to each other.
+                    During the game this cell works as a water cell.
+        num > 0 -   cell with ship ID number (always positive). It's used to point out
                     correct ship/index in fleet array       */
 
 export default class GameBoard {
@@ -54,15 +56,16 @@ export default class GameBoard {
     }
 
     /*  check proximity to other ships, if too close - throw error. 
-        If all green - place the ship and it's own proximity area                   */
+        If all green - mark the area around as occupied and place the ship  */
     placeHorizontal(size, startRow, startColumn) {
         for (let i = 0; i < size; i++) {
-            //  null means empty space away from other ships
+            //  null means empty/water cell away from other ships
             if (this.board[startRow][startColumn + i] !== null)
                 throw new Error('Too close to other ship!');
         }
 
-        this.addProximityArea(
+        addProximityArea.call(
+            this,
             clamp(startRow - 1, 0, 9),
             clamp(startRow + 1, 0, 9),
             clamp(startColumn - 1, 0, 9),
@@ -75,15 +78,16 @@ export default class GameBoard {
     }
 
     /*  check proximity to other ships, if too close - throw error. 
-        If all green - place the ship and it's own proximity area                  */
+        If all green - mark the area around as occupied and place the ship  */
     placeVertical(size, startRow, startColumn) {
         for (let i = 0; i < size; i++) {
-            //  null means empty space away from other ships
+            //  null means empty/water cell away from other ships
             if (this.board[startRow + i][startColumn] !== null)
                 throw new Error('Too close to other ship!');
         }
 
-        this.addProximityArea(
+        addProximityArea.call(
+            this,
             clamp(startRow - 1, 0, 9),
             clamp(startRow + size, 0, 9),
             clamp(startColumn - 1, 0, 9),
@@ -95,16 +99,11 @@ export default class GameBoard {
         }
     }
 
-    addProximityArea(startRow, endRow, startColumn, endColumn) {
-        for (let i = startRow; i <= endRow; i++)
-            for (let j = startColumn; j <= endColumn; j++) this.board[i][j] = 0;
-    }
-
     receiveAttack(row, column) {
         if (this.board[row][column] < 0)
             throw new Error('This cell was attacked already. Invalid action');
 
-        //  if cell is water (null) or space near ship (0)
+        //  if attacked cell is empty/water cell(null or 0)
         if (!this.board[row][column]) {
             this.board[row][column] = -1; //  mark as miss
             return false;
@@ -114,7 +113,7 @@ export default class GameBoard {
         if (this.board[row][column] > 0) {
             let shipIndex = this.board[row][column] - 1;
             this.fleet[shipIndex].hit(); //  register hit
-            this.board[row][column] = -2; //  mark cell as attacked
+            this.board[row][column] = -2; //  mark cell as destroyed
 
             if (this.fleet[shipIndex].isSunk());
             // add some DOM logic to announce the destruction of the ship

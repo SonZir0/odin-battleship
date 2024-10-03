@@ -21,7 +21,7 @@ test('The new ship is correctly placed on board/matrix', () => {
     testBoard.addShip(shipLength, isVertical, startRow, startColumn);
 
     for (let i = 0; i < shipLength; i++) {
-        // 1 is ship ID (index in fleet array + 1, basically)
+        // 1 is ship ID (index in fleet array + 1)
         expect(testBoard.board[startRow + i][startColumn]).toBe(1);
     }
 });
@@ -40,18 +40,20 @@ test("Can't place new ships too close to another one", () => {
 });
 
 test('The gameboard tracks hits and misses', () => {
-    testBoard.addShip(1, false, 0, 0);
-    expect(testBoard.board[0][0]).toBe(1);
+    testBoard.addShip(1, false, 0, 0); // place new ship with size 1 at 0x0
+    expect(testBoard.board[0][0]).toBe(1); // cell is occupied by ship with ID 1
     testBoard.receiveAttack(0, 0);
-    expect(testBoard.board[0][0]).toBe(-2);
+    expect(testBoard.board[0][0]).toBe(-2); // ship is destroyed
     testBoard.receiveAttack(0, 1);
-    expect(testBoard.board[0][1]).toBe(-1);
-    expect(testBoard.board[1][0]).toBeFalsy();
+    expect(testBoard.board[0][1]).toBe(-1); // attack on empty tile
+    expect(testBoard.board[1][0]).toBeFalsy(); // just empty/water tile that wasn't attacked yet
 });
 
 test('The gameboard should track how many operational ships remain', () => {
     expect(testBoard.shipsRemain()).toBe(0);
-    testBoard.addShip(2, false, 0, 0);
+    testBoard.addShip(1, false, 0, 0);
     testBoard.addShip(2, true, 2, 1);
     expect(testBoard.shipsRemain()).toBe(2);
+    testBoard.receiveAttack(0, 0);
+    expect(testBoard.shipsRemain()).toBe(1);
 });
