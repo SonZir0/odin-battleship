@@ -1,4 +1,4 @@
-import { clamp, addProximityArea } from './utils';
+import { clamp, initBoard, addProximityArea } from './utils';
 
 /*  TargetBoard class represents opponent's board. The board itself is a matrix and numbers
     on it mark the following:
@@ -6,9 +6,9 @@ import { clamp, addProximityArea } from './utils';
         null    -   "fog of war" cell
         0       -   known empty cell. Marked as such automatically around destroyed ships or
                     after attacking water cells. Invalid target
-        num > 0 -   cell with ship target ID number (distinct from ship ID on opponents board).
-                    It's used to mark cells that might have other sections of some damaged but
-                    not destroyed ship. Used by CPU and maybe in player assistance toggle?      */
+        num > 0 -   damaged ship cell. Marked with target ID number (distinct from ship ID on
+                    opponents board). It's used to mark destroyed part of a target that still
+                    has other sections around it. Used by CPU/player assistance toggle?       */
 
 export default class TargetBoard {
     board;
@@ -16,38 +16,31 @@ export default class TargetBoard {
     nextTargetID = 1;
 
     constructor() {
-        this.initBoard();
-    }
-
-    initBoard() {
-        //  create 10x10 board and fill it with water (null)
-        this.board = new Array(10);
-        for (let i = 0; i < 10; i++) {
-            this.board[i] = new Array(10).fill(null);
-        }
+        initBoard.call(this);
     }
 
     /*  Attack results:
         -1  - target is destroyed
          0  - miss
          1  - target is damaged, but not destroyed  */
-    trackAttackResults(targetX, targetY, resultCode) {
-        if (resultCode === 0) this.board[targetX][targetY] = 0;
+    trackAttackResults(targetRow, targetColumn, resultCode) {
+        if (resultCode === 0) this.board[targetRow][targetColumn] = 0;
         else if (resultCode === -1) {
             // later add the check for existing targetObject before marking tile as destroyed
-            this.board[targetX][targetY] = -1;
+            this.board[targetRow][targetColumn] = -1;
         }
-        // add more complex damagedNotDestroyed case as targetObj implemented
+        /*  add more complex damagedNotDestroyed case as targetObj implemented 
+            needs a check for existing target and the edge case for the merging of the 2
+            targetObj for the same ship    */
     }
 
-    isValidAttack(targetX, targetY) {
+    isValidAttack(targetRow, targetColumn) {
         if (
-            targetX >= 0 &&
-            targetX < 10 &&
-            targetY >= 0 &&
-            targetY < 10 &&
-            (this.board[targetX][targetY] === null ||
-                this.board[targetX][targetY] > 0)
+            targetRow >= 0 &&
+            targetRow < 10 &&
+            targetColumn >= 0 &&
+            targetColumn < 10 &&
+            this.board[targetRow][targetColumn] === null
         )
             return true;
         return false;
