@@ -1,7 +1,7 @@
 import Ship from './ship';
-import { clamp, addProximityArea } from './utils';
+import { clamp, initBoard, addProximityArea } from './utils';
 
-/*  GameBoard class represents player's team. The boards itself is a matrix and numbers
+/*  GameBoard class represents player's team. The board itself is a matrix and numbers
     on it mark the following:
         -2      -   damaged ship cell
         -1      -   attacked empty/water cell
@@ -17,15 +17,7 @@ export default class GameBoard {
     fleet = [];
 
     constructor() {
-        this.initBoard();
-    }
-
-    initBoard() {
-        //  create 10x10 board and fill it with water (null)
-        this.board = new Array(10);
-        for (let i = 0; i < 10; i++) {
-            this.board[i] = new Array(10).fill(null);
-        }
+        initBoard.call(this);
     }
 
     addShip(size, isVertical = true, startRow = 0, startColumn = 0) {
